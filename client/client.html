@@ -6,7 +6,60 @@
   
   <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.34/browser.min.js"></script>
   <script type="text/babel">
+  ()=>{
+    const init = () =>{
+      //hook up buttons, this will trigger sendAjax
+      document.querySelector("#send").addEventListener('click', ()=>{sendAjax( document.querySelector("#page").value, document.querySelector("#type").value)});
+    }
+    window.onload = init;    
+   
+    //function to send an xhr request
+    const sendAjax = (url, acceptedType) => {
+      console.log(url);
+      console.log(acceptedType);
+      //create a new xhr (ajax) request. 
+      //Remember that these are ASYNCHRONOUS
+      const xhr = new XMLHttpRequest();
+      //set the xhr to a GET request to a certain URL
+      xhr.open('GET', url);
+      //Set the accept headers to the desired response mime type
+      //Server does NOT have to support this. It is a gentle request.
+      xhr.setRequestHeader("Accept", acceptedType);
 
+      //When the xhr loads, call handleResponse and pass the xhr object
+      xhr.onload = () => handleResponse(xhr);
+      
+      //send our ajax request to the server
+      xhr.send();
+    };
+    
+    const handleResponse = (xhr) => {
+      //set as type
+      const type = xhr.getResponseHeader('Content-Type');
+      
+      //h1 add h1 and p into content
+      const content = document.querySelector("#content");
+      content.innerHTML = "<h1 id='id'>ID: </h1> <p id='msg'>Message: </p>";
+      
+      let id = document.querySelector("#id");
+      let msg = document.querySelector("#msg");
+      
+      //if xml 
+      if(xhr.responseXML){
+        console.log(xhr.responseXML);
+        const responseID = xhr.responseXML.querySelector('id').textContent;
+        id.innerHTML += responseID;
+        const responseMSG = xhr.responseXML.querySelector('message').textContent;
+        msg.innerHTML += responseMSG;
+      } else { //if json
+        //parse json back to js obj and set hi to id and set p to message
+        const responseObj = JSON.parse(xhr.response);
+        id.innerHTML += responseObj.id;
+        msg.innerHTML += responseObj.message;
+      }
+    };
+    
+  }();
   </script>
 </head>
 <body>
